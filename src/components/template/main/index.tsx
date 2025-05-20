@@ -6,6 +6,7 @@ import { Login } from "./login";
 import { MainContent } from "./content";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { COOKIES } from "@/constants/constants";
 
 interface Props {
   configs: any;
@@ -27,16 +28,16 @@ export function MainTemplate(props: Props) {
   const handleLogout = () => {
     setUser(null);
     setToken("");
-    Cookie.remove("gitHub.pr.generator.user");
-    Cookie.remove("gitHub.pr.generator.token");
+    Cookie.remove(COOKIES.USER);
+    Cookie.remove(COOKIES.TOKEN);
     router.replace("/");
   };
 
   useEffect(() => {
     (async () => {
       setIsLoading(true);
-      const userCookie = Cookie.get("gitHub.pr.generator.user");
-      const tokenCookie = Cookie.get("gitHub.pr.generator.token");
+      const userCookie = Cookie.get(COOKIES.USER);
+      const tokenCookie = Cookie.get(COOKIES.TOKEN);
       const user = userCookie ? JSON.parse(userCookie) : null;
       setUser(user);
       setToken(tokenCookie || "");

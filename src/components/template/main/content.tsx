@@ -29,6 +29,7 @@ import {
   InfoIcon,
   TriangleAlertIcon,
   XIcon,
+  Loader2Icon,
 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -37,6 +38,7 @@ import { AI } from "@/lib/ai";
 import { useSearchParams } from "next/navigation";
 import { RepositoriesSelect, Repository } from "./repositories-select";
 import { AISettings, SettingsModal } from "./settings-modal";
+import { QUERY_SEARCH_PARAMS } from "@/constants/constants";
 
 interface Props {
   auth: {
@@ -85,6 +87,7 @@ export function MainContent(props: Props) {
     { title?: string; description?: string } | undefined
   >(undefined);
   const [loading, setLoading] = useState(false);
+  const [loadingData, setLoadingData] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [success, setSuccess] = useState(false);
   const [message, setMessage] = useState<
@@ -327,24 +330,36 @@ export function MainContent(props: Props) {
 
   useEffect(() => {
     (async () => {
-      const repositoryName = params.get("repository_name");
-      const baseBranch = params.get("base_branch");
-      const headBranch = params.get("head_branch");
+      const repositoryName = params.get(QUERY_SEARCH_PARAMS.REPOSITORY_NAME);
+      const baseBranch = params.get(QUERY_SEARCH_PARAMS.BASE_BRANCH);
+      const headBranch = params.get(QUERY_SEARCH_PARAMS.HEAD_BRANCH);
 
       if (!repositoryName) return;
       if (!baseBranch) return;
       if (!headBranch) return;
 
-      const repository = await github.getRepositoryByOwner({
-        owner: user.login,
-        repo: repositoryName,
-      });
+      try {
+        setLoadingData(true);
+        // Get Any Repo (user or organization)
+        const repository = await github.getRepositoryByOwner({
+          owner: user.login,
+          repo: repositoryName,
+        });
 
-      setSelectedRepo(repository);
-      setBaseBranch(baseBranch);
-      setHeadBranch(headBranch);
+        setSelectedRepo(repository);
+        setBaseBranch(baseBranch);
+        setHeadBranch(headBranch);
 
-      await fetchCommits();
+        await fetchCommits();
+      } catch (error) {
+        console.error(error);
+        setMessage({
+          type: "error",
+          content: `Error loading data params (${repositoryName}, ${baseBranch}, ${headBranch})`,
+        });
+      } finally {
+        setLoadingData(false);
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [github, params, user.login]);
@@ -530,7 +545,7 @@ export function MainContent(props: Props) {
                     className="text-xs text-blue-500 hover:cursor-pointer hover:no-underline"
                     onClick={() => setOpenAllCommitsModal(true)}
                   >
-                    Ver Todos Commits
+                    All Commits
                   </Button>
                 </div>
                 {/* )} */}
@@ -673,6 +688,12 @@ export function MainContent(props: Props) {
               </CardContent>
             </Card>
           </div>
+        </div>
+      )}
+
+      {loadingData && (
+        <div className="z-50 fixed inset-0 bg-black/50 flex items-center justify-center w-screen h-screen">
+          <Loader2Icon size={32} />
         </div>
       )}
     </>

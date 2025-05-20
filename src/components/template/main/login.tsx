@@ -14,6 +14,7 @@ import { Loader2, Github } from "lucide-react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
+import { COOKIES } from "@/constants/constants";
 
 interface Props {
   configs: { githubClientId: string };
@@ -80,11 +81,11 @@ export function Login(props: Props) {
             login: responseUser.login,
           };
 
-          Cookie.set("gitHub.pr.generator.token", token, {
+          Cookie.set(COOKIES.TOKEN, token, {
             expires: 7,
             path: "/",
           });
-          Cookie.set("gitHub.pr.generator.user", JSON.stringify(user), {
+          Cookie.set(COOKIES.USER, JSON.stringify(user), {
             expires: 7,
             path: "/",
           });

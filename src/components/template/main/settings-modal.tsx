@@ -71,7 +71,9 @@ export function SettingsModal(props: Props) {
             </Label>
             <Input
               id="ai_api_url"
+              name="ai_api_url"
               value={settings.aiApiUrl}
+              autoComplete="false"
               onChange={(e) =>
                 setSettings({ ...settings, aiApiUrl: e.target.value })
               }
@@ -86,6 +88,7 @@ export function SettingsModal(props: Props) {
             <Input
               id="ai_api_key"
               type="password"
+              name="ai_api_key"
               value={settings.aiApiKey}
               onChange={(e) =>
                 setSettings({ ...settings, aiApiKey: e.target.value })
@@ -100,6 +103,7 @@ export function SettingsModal(props: Props) {
             </Label>
             <Input
               id="ai_model"
+              name="ai_model"
               value={settings.aiModel}
               onChange={(e) =>
                 setSettings({ ...settings, aiModel: e.target.value })
