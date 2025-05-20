@@ -9,10 +9,11 @@ import { useRouter } from "next/navigation";
 
 interface Props {
   configs: any;
+  saveSettingsAction: (data: any) => void;
 }
 
 export function MainTemplate(props: Props) {
-  const { configs } = props;
+  const { configs, saveSettingsAction } = props;
   const router = useRouter();
 
   const [token, setToken] = useState("");
@@ -70,6 +71,7 @@ export function MainTemplate(props: Props) {
       auth={{ user, token }}
       configs={configs}
       onLogout={handleLogout}
+      saveSettingsAction={saveSettingsAction}
     />
   );
 }

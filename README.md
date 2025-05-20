@@ -49,6 +49,7 @@ This tool is designed to streamline the Pull Request creation process by leverag
    NEXT_PUBLIC_REDIRECT_URL=http://localhost:3000
    NEXT_PUBLIC_AI_API_URL=your_deepseek_api_url
    AI_API_KEY=your_deepseek_api_key
+   ENCRYPT_SECRET_KEY=your_encrypt_secret_key
    ```
 
 4. Start the development server:
@@ -95,6 +96,7 @@ You can configure the application through environment variables:
 | `NEXT_PUBLIC_REDIRECT_URL` | Callback URL for GitHub OAuth | http://localhost:3000 |
 | `NEXT_PUBLIC_AI_API_URL` | API URL for your AI service | your_deepseek_api_url |
 | `AI_API_KEY` | API key for your AI service | - |
+| `ENCRYPT_SECRET_KEY` | Secret key for encryption of settings | - |
 
 You can also adjust settings directly in the application:
 - Custom AI API endpoints
@@ -127,7 +129,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🔗 Related Projects
 
-Check out the VSCode extension version of this tool in the [vsc-extension](../vsc-extension) directory.
+Check out the VSCode extension version of this tool in the [vsc-extension]([../vsc-extension](https://github.com/PEAL-26/ai-powered-github-pr-generator-vsc-extension)) directory.
 
 ---
 

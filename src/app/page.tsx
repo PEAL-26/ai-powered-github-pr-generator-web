@@ -1,3 +1,4 @@
+import { saveSettingsAction } from "@/actions/save-settings";
 import { MainTemplate } from "@/components/template/main";
 import { appConfigs } from "@/configs/app";
 import { cookies as cookiesNext } from "next/headers";
@@ -12,7 +13,7 @@ export default async function Home() {
         AI-Powered GitHub PR Generator
       </h1>
 
-      <MainTemplate configs={configs} />
+      <MainTemplate configs={configs} saveSettingsAction={saveSettingsAction} />
     </main>
   );
 }

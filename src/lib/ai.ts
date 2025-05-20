@@ -4,8 +4,11 @@ import { ChatCompletionCreateParamsNonStreaming } from "openai/resources.mjs";
 
 export class AI {
   private ai: OpenAI;
-  constructor(options?: ClientOptions) {
+  private model?: string;
+
+  constructor(options?: ClientOptions & { model?: string }) {
     this.ai = new OpenAI(options);
+    this.model = options?.model;
   }
 
   chat = async (content: string) => {
@@ -16,7 +19,7 @@ export class AI {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "deepseek-chat",
+        model: this.model || "deepseek-r1:1.5b",
         messages: [{ role: "user", content }],
         stream: false,
       }),
@@ -24,9 +27,12 @@ export class AI {
   };
 
   chatCompletionsCreate(
-    body: ChatCompletionCreateParamsNonStreaming,
+    body: Omit<ChatCompletionCreateParamsNonStreaming, "model">,
     options?: RequestOptions
   ) {
-    return this.ai.chat.completions.create(body, options);
+    return this.ai.chat.completions.create(
+      { ...body, model: this.model || "deepseek-r1:1.5b" },
+      options
+    );
   }
 }

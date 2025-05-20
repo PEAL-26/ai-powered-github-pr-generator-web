@@ -73,17 +73,17 @@ async function getPRDescriptionFromAI(commits: string[], maxRetries = 3) {
 
       console.log(service);
 
-      const filled = await page
-      .waitForFunction(
-        ({prompt, selector}) => {
-          const input = document.querySelector(selector) as any;
-          input.value = prompt;
-          return input?.value.length === prompt.length;
-        },
-        {},
-        {prompt, selector:service.inputSelector}
-      )
-      .then((response) => response.jsonValue());
+      // const filled = await page
+      // .waitForFunction(
+      //   ({prompt, selector}) => {
+      //     const input = document.querySelector(selector) as any;
+      //     input.value = prompt;
+      //     return input?.value.length === prompt.length;
+      //   },
+      //   {},
+      //   {prompt, selector:service.inputSelector}
+      // )
+      // .then((response) => response.jsonValue());
 
       await page.type(service.inputSelector, prompt);
 
@@ -101,14 +101,14 @@ async function getPRDescriptionFromAI(commits: string[], maxRetries = 3) {
       }, service.outputSelector);
 
       // Processamento da resposta
-      const jsonMatch = response.match(/\{[\s\S]*\}/);
+      // const jsonMatch = response.match(/\{[\s\S]*\}/);
 
       console.log();
 
       return { title: "teste", description: "" };
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      }
+      // if (jsonMatch) {
+      //   return JSON.parse(jsonMatch[0]);
+      // }
 
       return {
         title: "PR: Multiple changes",
@@ -116,7 +116,7 @@ async function getPRDescriptionFromAI(commits: string[], maxRetries = 3) {
       };
     } catch (error) {
       lastError = error;
-      console.warn(`Tentativa ${retries + 1} falhou:`, error.message);
+      // console.warn(`Tentativa ${retries + 1} falhou:`, error.message);
     } finally {
       if (browser) await browser.close();
       retries++;
@@ -146,7 +146,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const result = getPRDescriptionFromAI(commits);
+   getPRDescriptionFromAI(commits);
 
     return NextResponse.json(
       { title: "Titulo", description: "Descrição" },

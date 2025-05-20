@@ -36,7 +36,7 @@ import { Github } from "@/lib/github";
 import { AI } from "@/lib/ai";
 import { useSearchParams } from "next/navigation";
 import { RepositoriesSelect, Repository } from "./repositories-select";
-import { SettingsModal } from "./settings-modal";
+import { AISettings, SettingsModal } from "./settings-modal";
 
 interface Props {
   auth: {
@@ -46,8 +46,10 @@ interface Props {
   configs: {
     aiApiKey: string;
     aiApiUrl: string;
+    aiModel: string;
   };
   onLogout?(): void;
+  saveSettingsAction: (data: AISettings) => void;
 }
 
 type Commit = {
@@ -59,13 +61,14 @@ type Commit = {
 };
 
 export function MainContent(props: Props) {
-  const { configs, auth, onLogout } = props;
+  const { configs, auth, onLogout, saveSettingsAction } = props;
 
   const { github, user, ai } = useMemo(() => {
     const github = new Github(auth.token);
     const ai = new AI({
       baseURL: configs.aiApiUrl,
       apiKey: configs.aiApiKey,
+      model: configs.aiModel,
       dangerouslyAllowBrowser: true,
     });
     const user = auth.user;
@@ -214,8 +217,8 @@ export function MainContent(props: Props) {
       if (commits.length === 0) return;
       setGenerating(true);
       setPullRequest(undefined);
+      setMessage(undefined);
       const response = await ai.chatCompletionsCreate({
-        model: "deepseek-r1:1.5b",
         messages: [
           {
             role: "user",
@@ -293,7 +296,7 @@ export function MainContent(props: Props) {
       }
 
       setLoading(true);
-
+      setMessage(undefined);
       await github.createPullRequest({
         owner: user.login,
         repo: selectedRepo.name,
@@ -375,7 +378,10 @@ export function MainContent(props: Props) {
             <LogOut className="mr-2 h-4 w-4" />
             Logout
           </Button>
-          <SettingsModal />
+          <SettingsModal
+            saveSettingsAction={saveSettingsAction}
+            defaultConfigs={configs}
+          />
         </div>
       </div>
 
