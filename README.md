@@ -47,8 +47,9 @@ This tool is designed to streamline the Pull Request creation process by leverag
    ```
    GITHUB_CLIENT_ID=your_github_client_id
    NEXT_PUBLIC_REDIRECT_URL=http://localhost:3000
-   NEXT_PUBLIC_AI_API_URL=your_deepseek_api_url
-   AI_API_KEY=your_deepseek_api_key
+   NEXT_PUBLIC_AI_API_URL=your_ai_api_url
+   AI_API_KEY=your_ai_api_key
+   AI_MODEL=ai_model
    ENCRYPT_SECRET_KEY=your_encrypt_secret_key
    ```
 
@@ -94,8 +95,9 @@ You can configure the application through environment variables:
 |----------|-------------|---------|
 | `GITHUB_CLIENT_ID` | Your GitHub OAuth client ID | - |
 | `NEXT_PUBLIC_REDIRECT_URL` | Callback URL for GitHub OAuth | http://localhost:3000 |
-| `NEXT_PUBLIC_AI_API_URL` | API URL for your AI service | your_deepseek_api_url |
+| `NEXT_PUBLIC_AI_API_URL` | API URL for your AI service | your_ai_api_url |
 | `AI_API_KEY` | API key for your AI service | - |
+| `AI_MODEL` | Model for your AI service | deepseek-r1:1.5b |
 | `ENCRYPT_SECRET_KEY` | Secret key for encryption of settings | - |
 
 You can also adjust settings directly in the application:
