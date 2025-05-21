@@ -103,6 +103,7 @@ You can configure the application through environment variables:
 You can also adjust settings directly in the application:
 - Custom AI API endpoints
 - AI API keys
+- AI Model
 - Other preferences
 
 ## 🧩 Technologies Used
@@ -113,7 +114,6 @@ This project leverages the following technologies:
 - **Styling**: Tailwind CSS 4, Radix UI components
 - **APIs**: GitHub API (Octokit), DeepSeek R1 AI
 - **Authentication**: GitHub OAuth
-- **Tools**: Puppeteer (for specific functionalities)
 
 ## 🤝 Contributing
 

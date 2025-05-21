@@ -89,7 +89,9 @@ export function MainContent(props: Props) {
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
   const [generating, setGenerating] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [prStatus, setPrStatus] = useState<"pending" | "success" | "exists">(
+    "pending"
+  );
   const [message, setMessage] = useState<
     { type: "success" | "error"; content: string; scope?: string } | undefined
   >(undefined);
@@ -98,14 +100,13 @@ export function MainContent(props: Props) {
 
   const handleLogout = () => {
     onLogout?.();
-    //setRepositories([]);
     setSelectedRepo(null);
     setBranches([]);
     setBaseBranch("main");
     setHeadBranch("");
     setCommits([]);
     setPullRequest(undefined);
-    setSuccess(false);
+    setPrStatus("pending");
   };
 
   const handleRepoSelect = async (repository: Repository) => {
@@ -123,7 +124,7 @@ export function MainContent(props: Props) {
       setHeadBranch("");
       setPullRequest(undefined);
       setLoading(false);
-      setSuccess(false);
+      setPrStatus("pending");
       setGenerating(false);
     } catch (error) {
       console.error(error);
@@ -134,10 +135,22 @@ export function MainContent(props: Props) {
     }
   };
 
+  const checkPullRequestOpenedExists = async () => {
+    const pulls = await github.listPullRequests({
+      owner: user.login,
+      repo: selectedRepo?.name || "",
+      baseBranch: baseBranch,
+      headBranch: headBranch,
+      state: "open",
+    });
+
+    return pulls.length > 0;
+  };
+
   const fetchCommits = useCallback(async () => {
     if (generating) return;
     if (loading) return;
-    if (success) return;
+    if (prStatus === "success" || prStatus === "exists") return;
 
     try {
       setMessage(undefined);
@@ -159,69 +172,69 @@ export function MainContent(props: Props) {
       setGenerating(false);
       setPullRequest(undefined);
       setMessage(undefined);
-      setSuccess(false);
+      setPrStatus("pending");
+
+      const exists = await checkPullRequestOpenedExists();
+      if (exists) {
+        setPrStatus("exists");
+        return setMessage({
+          type: "error",
+          content: "Já existe um pull request aberto",
+          scope: "fetch_commits",
+        });
+      }
 
       const { commits } = await github.getUnmergedCommits({
         owner: user.login,
         repo: selectedRepo.name,
-        targetBranch: baseBranch,
-        sourceBranch: headBranch,
+        baseBranch: baseBranch,
+        headBranch: headBranch,
       });
 
-      commits.sort(
-        (
-          a: { commit: { committer: { date: string } } },
-          b: { commit: { committer: { date: string } } }
-        ) => {
-          return (
-            new Date(b.commit.committer.date).getTime() -
-            new Date(a.commit.committer.date).getTime()
-          );
-        }
-      );
+      commits.sort((a, b) => {
+        return (
+          new Date(b.commit.committer?.date || "").getTime() -
+          new Date(a.commit.committer?.date || "").getTime()
+        );
+      });
 
       setCommits(
-        commits.map(
-          (c: {
-            node_id: string;
-            sha: string;
-            commit: {
-              message: string;
-              committer: { date: string };
-            };
-            author: { login: string };
-          }) => ({
-            id: c.node_id,
-            sha: c.sha,
-            message: c.commit.message,
-            author: c.author.login,
-            date: new Date(c.commit.committer.date).toLocaleString(),
-          })
-        )
+        commits.map((c) => ({
+          id: c.node_id,
+          sha: c.sha,
+          message: c.commit.message,
+          author: c.author?.login || "",
+          date: new Date(c.commit.committer?.date || "").toLocaleString(),
+        }))
       );
     } catch (error) {
       console.error(error);
     } finally {
       setLoading(false);
     }
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     baseBranch,
     generating,
     github,
     headBranch,
     loading,
+    prStatus,
     selectedRepo,
-    success,
     user.login,
   ]);
 
   const generatePullRequest = async () => {
     try {
       if (commits.length === 0) return;
+      if (prStatus === "exists") return;
+
       setGenerating(true);
       setPullRequest(undefined);
       setMessage(undefined);
-      const response = await ai.chatCompletionsCreate({
+
+      const response = await ai.createCompletions({
         messages: [
           {
             role: "user",
@@ -309,10 +322,10 @@ export function MainContent(props: Props) {
         body: pullRequest?.description || "",
       });
 
-      setSuccess(true);
+      setPrStatus("success");
 
       setTimeout(() => {
-        setSuccess(false);
+        setPrStatus("pending");
         setMessage(undefined);
         setPullRequest(undefined);
         setCommits([]);
@@ -326,6 +339,18 @@ export function MainContent(props: Props) {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleBranchSelect = (value: string, type: "base" | "head") => {
+    if (type === "base") {
+      setBaseBranch(value);
+    } else {
+      setHeadBranch(value);
+    }
+
+    setPullRequest(undefined);
+    setPrStatus("pending");
+    setMessage(undefined);
   };
 
   useEffect(() => {
@@ -412,7 +437,7 @@ export function MainContent(props: Props) {
         >
           <h3 className="font-bold text-lg mb-2 flex items-center justify-center">
             {iconMessage[message.type]}
-            {message.type === "error" && "Oops, algo deu errado!"}
+            {message.type === "error" && `Oops! ${message.content}`}
             {message.type === "success" && "Yep, Operação feita com sucesso."}
           </h3>
           <p>{message.content}</p>
@@ -453,10 +478,7 @@ export function MainContent(props: Props) {
                   <Select
                     disabled={generating}
                     value={baseBranch}
-                    onValueChange={(value) => {
-                      setBaseBranch(value);
-                      setLoading(false);
-                    }}
+                    onValueChange={(value) => handleBranchSelect(value, "base")}
                   >
                     <SelectTrigger id="base-branch" className="w-full">
                       <SelectValue placeholder="Select base branch" />
@@ -475,10 +497,7 @@ export function MainContent(props: Props) {
                   <Select
                     disabled={generating}
                     value={headBranch}
-                    onValueChange={(value) => {
-                      setHeadBranch(value);
-                      setLoading(false);
-                    }}
+                    onValueChange={(value) => handleBranchSelect(value, "head")}
                   >
                     <SelectTrigger id="head-branch" className="w-full">
                       <SelectValue placeholder="Select head branch" />
@@ -632,7 +651,7 @@ export function MainContent(props: Props) {
         </Card>
       )}
 
-      {success && (
+      {prStatus === "success" && (
         <div className="mt-8 p-4 border border-green-200 bg-green-50 rounded-lg text-green-800 text-center">
           <h3 className="font-bold text-lg mb-2 flex items-center justify-center">
             <GitPullRequest className="mr-2 h-5 w-5" />

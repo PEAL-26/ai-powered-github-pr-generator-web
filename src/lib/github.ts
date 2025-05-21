@@ -137,25 +137,44 @@ export class Github {
   getUnmergedCommits = async ({
     owner,
     repo,
-    sourceBranch,
-    targetBranch,
+    headBranch,
+    baseBranch,
   }: {
     owner: string;
     repo: string;
-    sourceBranch: string;
-    targetBranch: string;
+    baseBranch: string;
+    headBranch: string;
   }) => {
-    return fetch(
-      `${this.apiUrl}/repos/${owner}/${repo}/compare/${targetBranch}...${sourceBranch}`,
-      {
-        method: "GET",
+    return this.octokit
+      .request("GET /repos/{owner}/{repo}/compare/{base}...{head}", {
         headers: {
-          Authorization: `Bearer ${this.token}`,
-          Accept: "application/vnd.github.v3+json",
-          "Content-Type": "application/json",
+          "X-GitHub-Api-Version": "2022-11-28",
         },
-      }
-    ).then((response) => response.json());
+        owner,
+        repo,
+        base: baseBranch,
+        head: headBranch,
+      })
+      .then((response) => response.data);
+  };
+
+  listPullRequests = async (input: {
+    owner: string;
+    repo: string;
+    baseBranch?: string;
+    headBranch?: string;
+    state?: "all" | "open" | "closed";
+  }) => {
+    const { owner, repo, baseBranch, headBranch, state } = input;
+    return this.octokit
+      .request("GET /repos/{owner}/{repo}/pulls", {
+        owner,
+        repo,
+        base: baseBranch,
+        head: headBranch,
+        state,
+      })
+      .then((response) => response.data);
   };
 
   createPullRequest = async ({

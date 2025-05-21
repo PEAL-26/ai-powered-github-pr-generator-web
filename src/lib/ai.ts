@@ -26,7 +26,7 @@ export class AI {
     }).then((response) => response.json());
   };
 
-  chatCompletionsCreate(
+  createCompletions(
     body: Omit<ChatCompletionCreateParamsNonStreaming, "model">,
     options?: RequestOptions
   ) {
