@@ -184,12 +184,20 @@ export function MainContent(props: Props) {
         });
       }
 
-      const { commits } = await github.getUnmergedCommits({
+      const { commits = [] } = await github.listUnmergedCommits({
         owner: user.login,
         repo: selectedRepo.name,
         baseBranch: baseBranch,
         headBranch: headBranch,
       });
+
+      if (commits.length === 0) {
+        setMessage({
+          type: "error",
+          content: "Não exite nenhum commit",
+          scope: "fetch_commits",
+        });
+      }
 
       commits.sort((a, b) => {
         return (
@@ -397,7 +405,7 @@ export function MainContent(props: Props) {
   return (
     <>
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col md:flex-row gap-4 md:justify-between items-center mb-6">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center overflow-hidden">
             <Image
@@ -437,7 +445,7 @@ export function MainContent(props: Props) {
         >
           <h3 className="font-bold text-lg mb-2 flex items-center justify-center">
             {iconMessage[message.type]}
-            {message.type === "error" && `Oops! ${message.content}`}
+            {message.type === "error" && `Oops! Algo deu errado.`}
             {message.type === "success" && "Yep, Operação feita com sucesso."}
           </h3>
           <p>{message.content}</p>

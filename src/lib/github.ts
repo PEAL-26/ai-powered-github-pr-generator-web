@@ -134,7 +134,7 @@ export class Github {
     ).then((response) => response.json());
   };
 
-  getUnmergedCommits = async ({
+  listUnmergedCommits = async ({
     owner,
     repo,
     headBranch,
