@@ -284,6 +284,7 @@ export function MainContent(props: Props) {
             try {
               return JSON.parse(data);
             } catch (error) {
+              console.error(data);
               console.error(error);
               return undefined;
             }

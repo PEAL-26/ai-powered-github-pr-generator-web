@@ -1,3 +1,4 @@
+import { appConfigs } from "@/configs/app";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -8,12 +9,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const clientId = "Ov23lisBP6F6MiXITZGz";
-  const secret = "70837bdc10821e6e3bae29e8b73ebab90d518bfb";
+  const { githubClientId, githubClientSecret, githubRedirectUrl } =
+    appConfigs();
+    
   const githubAccessTokenParams = [
-    `client_id=${clientId}`,
-    `client_secret=${secret}`,
-    "redirect_uri=http://localhost:3000",
+    `client_id=${githubClientId}`,
+    `client_secret=${githubClientSecret}`,
+    `redirect_uri=${githubRedirectUrl}`,
   ];
 
   try {
