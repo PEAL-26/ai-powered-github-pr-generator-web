@@ -76,7 +76,7 @@ export class Github {
         node_id: string;
         repos_url: string;
         url: string;
-        description?: string;
+        description?: string | null;
       }) =>
         accountToOwner(data, "organization")
       ),
@@ -209,8 +209,8 @@ function accountToOwner(
     node_id: string;
     repos_url: string;
     url: string;
-    bio?: string;
-    description?: string;
+    bio?: string | null;
+    description?: string | null;
   },
   type?: "user" | "organization"
 ) {
@@ -218,7 +218,7 @@ function accountToOwner(
     id: data.id,
     type,
     avatar_url: data.avatar_url,
-    description: data?.bio || data?.description,
+    description: (data?.bio || data?.description) ?? undefined,
     events_url: data.events_url,
     login: data.login,
     node_id: data.node_id,
