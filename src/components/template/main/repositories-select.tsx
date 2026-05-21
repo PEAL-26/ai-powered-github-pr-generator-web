@@ -20,32 +20,10 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Github } from "@/lib/github";
-
-export type Repository = {
-  id: number;
-  name: string;
-  fullName: string;
-  private: boolean;
-};
-
-export type Owner = {
-  id: number;
-  login: string;
-  avatar_url: string;
-  type?: "user" | "organization";
-};
-
-export type Message = {
-  type: "success" | "error";
-  content: string;
-  scope?: string;
-};
+import { Message, Owner, Repository, UserAuth } from "@/types";
 
 interface Props {
-  auth: {
-    token: string;
-    user: { name: string; avatar: string; login: string };
-  };
+  auth: UserAuth;
   disabled?: boolean;
   onRepositoryChange?(repository: Repository): void;
 }

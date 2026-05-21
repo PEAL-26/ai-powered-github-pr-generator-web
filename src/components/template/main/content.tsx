@@ -34,48 +34,35 @@ import {
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Github } from "@/lib/github";
-import { AI } from "@/lib/ai";
 import { useSearchParams } from "next/navigation";
-import { RepositoriesSelect, Repository } from "./repositories-select";
+import { RepositoriesSelect } from "./repositories-select";
 import { AISettings, SettingsModal } from "./settings-modal";
 import { QUERY_SEARCH_PARAMS } from "@/constants/constants";
+import { generatePullRequestAction } from "@/actions/generate-pr";
+import {
+  AIConfigs,
+  Commit,
+  Message,
+  PullRequestContent,
+  Repository,
+  UserAuth,
+} from "@/types";
 
 interface Props {
-  auth: {
-    token: string;
-    user: { name: string; avatar: string; login: string };
-  };
-  configs: {
-    aiApiKey: string;
-    aiApiUrl: string;
-    aiModel: string;
-  };
+  auth: UserAuth;
+  configs: AIConfigs;
   onLogout?(): void;
   saveSettingsAction: (data: AISettings) => void;
 }
 
-type Commit = {
-  id: string;
-  sha: string;
-  author: string;
-  date: string;
-  message: string;
-};
-
 export function MainContent(props: Props) {
   const { configs, auth, onLogout, saveSettingsAction } = props;
 
-  const { github, user, ai } = useMemo(() => {
+  const { github, user } = useMemo(() => {
     const github = new Github(auth.token);
-    const ai = new AI({
-      baseURL: configs.aiApiUrl,
-      apiKey: configs.aiApiKey,
-      model: configs.aiModel,
-      dangerouslyAllowBrowser: true,
-    });
     const user = auth.user;
-    return { github, user, ai };
-  }, [auth, configs]);
+    return { github, user };
+  }, [auth]);
 
   const [openAllCommitsModal, setOpenAllCommitsModal] = useState(false);
   const [selectedRepo, setSelectedRepo] = useState<Repository | null>(null);
@@ -84,7 +71,7 @@ export function MainContent(props: Props) {
   const [headBranch, setHeadBranch] = useState("");
   const [commits, setCommits] = useState<Commit[]>([]);
   const [pullRequest, setPullRequest] = useState<
-    { title?: string; description?: string } | undefined
+    PullRequestContent | undefined
   >(undefined);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
@@ -92,9 +79,7 @@ export function MainContent(props: Props) {
   const [prStatus, setPrStatus] = useState<"pending" | "success" | "exists">(
     "pending"
   );
-  const [message, setMessage] = useState<
-    { type: "success" | "error"; content: string; scope?: string } | undefined
-  >(undefined);
+  const [message, setMessage] = useState<Message | undefined>(undefined);
 
   const params = useSearchParams();
 
@@ -242,54 +227,8 @@ export function MainContent(props: Props) {
       setPullRequest(undefined);
       setMessage(undefined);
 
-      const response = await ai.createCompletions({
-        messages: [
-          {
-            role: "user",
-            content: `Você é um assistente especializado em desenvolvimento de software e boas práticas de Git.
-            Vou fornecer uma lista de mensagens de commit e quero que você gere:
-            
-            1. Um título claro e conciso para o pull request (máximo de 72 caracteres)
-            2. Uma descrição detalhada que:
-               - Explique o propósito geral das mudanças
-               - Destaque as alterações mais importantes
-               - Inclua quaisquer observações relevantes para os revisores
-               - Formate a descrição em Markdown
-            
-            As mensagens de commit são:
-            ${commits.map((c) => c.message).join("\n")}
-            
-            Retorne a resposta em formato JSON com a seguinte estritamente a estrutura (na estrutura deve ter apenas o title e a description e nada mais) a baixo:
-            {
-              "title": "Título do PR aqui",
-              "description": "Descrição detalhada aqui\\n- Com\\n- Markdown\\n- Formatado"
-            }
-            
-            O título deve ser em inglês (se possível) e seguir o padrão convencional commit (ex: "feat: add new authentication module").
-            A descrição pode ser em português.
-            
-            OBS: o conteúdo do title e da description, não pode ser em momento algum object
-            `,
-          },
-        ],
-      });
-
-      const messageContent = response.choices
-        .flatMap((c) => c.message.content)
-        .join("\n");
-
-      const [data] = messageContent.match(/\{[\s\S]*\}/) || [];
-      const dataJSON: { title: string; description: string } | undefined = data
-        ? (() => {
-            try {
-              return JSON.parse(data);
-            } catch (error) {
-              console.error(data);
-              console.error(error);
-              return undefined;
-            }
-          })()
-        : undefined;
+      const commitMessages = commits.map((c) => c.message);
+      const dataJSON = await generatePullRequestAction(commitMessages);
 
       if (dataJSON) {
         setPullRequest(dataJSON);

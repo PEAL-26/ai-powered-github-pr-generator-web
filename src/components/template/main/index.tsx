@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import Cookie from "js-cookie";
 import { useEffect, useState } from "react";
@@ -7,10 +6,12 @@ import { MainContent } from "./content";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { COOKIES } from "@/constants/constants";
+import { AIConfigs } from "@/types";
+import { AISettings } from "./settings-modal";
 
 interface Props {
-  configs: any;
-  saveSettingsAction: (data: any) => void;
+  configs: AIConfigs;
+  saveSettingsAction: (data: AISettings) => void;
 }
 
 export function MainTemplate(props: Props) {
