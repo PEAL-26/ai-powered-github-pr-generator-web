@@ -19,11 +19,16 @@ export function appConfigs(cookies?: ReadonlyRequestCookies) {
   );
 
   return {
-    githubRedirectUrl: process.env.NEXT_PUBLIC_REDIRECT_URL,
-    githubClientId: process.env.GITHUB_CLIENT_ID,
-    githubClientSecret: process.env.GITHUB_CLIENT_SECRET,
-    aiApiUrl: settingsAIApiUrl || process.env.NEXT_PUBLIC_AI_API_URL,
-    aiApiKey: settingsAIApiKey || process.env.AI_API_KEY,
-    aiModel: settingsAIModel || process.env.PUBLIC_NEXT_AI_MODEL,
+    githubRedirectUrl: process.env.NEXT_PUBLIC_REDIRECT_URL || "",
+    githubClientId: process.env.GITHUB_CLIENT_ID || "",
+    githubClientSecret: process.env.GITHUB_CLIENT_SECRET || "",
+    aiApiUrl:
+      settingsAIApiUrl || process.env.NEXT_PUBLIC_AI_API_URL || "http://localhost:11434/api",
+    aiApiKey: settingsAIApiKey || process.env.AI_API_KEY || "",
+    aiModel:
+      settingsAIModel ||
+      process.env.NEXT_PUBLIC_AI_MODEL ||
+      process.env.PUBLIC_NEXT_AI_MODEL ||
+      "deepseek-r1:1.5b",
   };
 }
