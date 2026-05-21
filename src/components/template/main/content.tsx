@@ -314,12 +314,17 @@ export function MainContent(props: Props) {
       try {
         setLoadingData(true);
         // Get Any Repo (user or organization)
-        const repository = await github.getRepositoryByOwner({
+        const response = await github.getRepositoryByOwner({
           owner: user.login,
           repo: repositoryName,
         });
 
-        setSelectedRepo(repository);
+        setSelectedRepo({
+          id: response.id,
+          name: response.name,
+          fullName: response.full_name,
+          private: response.private,
+        });
         setBaseBranch(baseBranch);
         setHeadBranch(headBranch);
 
@@ -557,7 +562,9 @@ export function MainContent(props: Props) {
                 id="pr-title"
                 value={pullRequest.title}
                 onChange={(e) =>
-                  setPullRequest((prev) => ({ ...prev, title: e.target.value }))
+                  setPullRequest((prev) =>
+                    prev ? { ...prev, title: e.target.value } : undefined
+                  )
                 }
               />
             </div>
@@ -568,10 +575,9 @@ export function MainContent(props: Props) {
                 rows={8}
                 value={pullRequest.description}
                 onChange={(e) =>
-                  setPullRequest((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
+                  setPullRequest((prev) =>
+                    prev ? { ...prev, description: e.target.value } : undefined
+                  )
                 }
               />
             </div>

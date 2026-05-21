@@ -2,6 +2,7 @@ export type AIConfigs = {
   aiApiKey: string;
   aiApiUrl: string;
   aiModel: string;
+  githubClientId: string;
 };
 
 export type UserAuth = {

@@ -15,9 +15,10 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { COOKIES } from "@/constants/constants";
+import { AIConfigs } from "@/types";
 
 interface Props {
-  configs: { githubClientId: string };
+  configs: AIConfigs;
   onLogin?(props: {
     token: string;
     user: { name: string; avatar: string; login: string };
