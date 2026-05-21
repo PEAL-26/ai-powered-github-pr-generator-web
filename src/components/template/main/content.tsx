@@ -39,17 +39,14 @@ import { useSearchParams } from "next/navigation";
 import { RepositoriesSelect, Repository } from "./repositories-select";
 import { AISettings, SettingsModal } from "./settings-modal";
 import { QUERY_SEARCH_PARAMS } from "@/constants/constants";
+import { AIConfigs } from ".";
 
 interface Props {
   auth: {
     token: string;
     user: { name: string; avatar: string; login: string };
   };
-  configs: {
-    aiApiKey: string;
-    aiApiUrl: string;
-    aiModel: string;
-  };
+  configs: AIConfigs;
   onLogout?(): void;
   saveSettingsAction: (data: AISettings) => void;
 }

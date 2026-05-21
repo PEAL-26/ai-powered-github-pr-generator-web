@@ -5,7 +5,9 @@ import { cookies as cookiesNext } from "next/headers";
 
 export default async function Home() {
   const cookies = await cookiesNext();
-  const configs = appConfigs(cookies);
+  const allConfigs = appConfigs(cookies);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { githubClientSecret, ...configs } = allConfigs;
 
   return (
     <main className="container mx-auto py-8 px-4">
