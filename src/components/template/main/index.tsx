@@ -6,15 +6,8 @@ import { MainContent } from "./content";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { COOKIES } from "@/constants/constants";
+import { AIConfigs } from "@/types";
 import { AISettings } from "./settings-modal";
-
-export interface AIConfigs {
-  githubRedirectUrl: string;
-  githubClientId: string;
-  aiApiUrl: string;
-  aiApiKey: string;
-  aiModel: string;
-}
 
 interface Props {
   configs: AIConfigs;

@@ -15,7 +15,7 @@ export class AI {
     return fetch(`${this.ai.baseURL}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${this.ai.baseURL}`,
+        Authorization: `Bearer ${this.ai.apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({

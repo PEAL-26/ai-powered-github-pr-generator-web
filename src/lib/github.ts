@@ -1,5 +1,6 @@
 import { Octokit } from "octokit";
 import { GITHUB_API } from "@/constants/constants";
+import { Owner } from "@/types";
 
 interface Options {
   apiUrl?: string;
@@ -59,15 +60,26 @@ export class Github {
       .then((response) => response.data);
   };
 
-  listAllOwners = async () => {
+  listAllOwners = async (): Promise<Owner[]> => {
     const [organizations, user] = await Promise.all([
       this.octokit.request("GET /user/orgs").then((response) => response.data),
       this.octokit.request("GET /user").then((response) => response.data),
     ]);
 
-    const owners = [
+    const owners: Owner[] = [
       accountToOwner(user, "user"),
-      ...organizations.map((data) => accountToOwner(data, "organization")),
+      ...organizations.map((data: {
+        id: number;
+        login: string;
+        avatar_url: string;
+        events_url: string;
+        node_id: string;
+        repos_url: string;
+        url: string;
+        description?: string;
+      }) =>
+        accountToOwner(data, "organization")
+      ),
     ];
 
     return owners;
@@ -80,36 +92,25 @@ export class Github {
     owner: string;
     repo: string;
   }) => {
-    return fetch(`${this.apiUrl}/repos/${owner}/${repo}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        Accept: "application/vnd.github.v3+json",
-        "Content-Type": "application/json",
-      },
-    }).then((response) => response.json());
+    return this.octokit
+      .request("GET /repos/{owner}/{repo}", {
+        owner,
+        repo,
+      })
+      .then((response) => response.data);
   };
 
   getBranches = async ({ owner, repo }: { owner: string; repo: string }) => {
-    return fetch(`${this.apiUrl}/repos/${owner}/${repo}/branches`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        Accept: "application/vnd.github.v3+json",
-        "Content-Type": "application/json",
-      },
-    }).then((response) => response.json());
+    return this.octokit
+      .request("GET /repos/{owner}/{repo}/branches", {
+        owner,
+        repo,
+      })
+      .then((response) => response.data);
   };
 
   getHeadBranch = async ({ owner, repo }: { owner: string; repo: string }) => {
-    return fetch(`${this.apiUrl}/repos/${owner}/${repo}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        Accept: "application/vnd.github.v3+json",
-        "Content-Type": "application/json",
-      },
-    }).then((response) => response.json());
+    return this.getRepositoryByOwner({ owner, repo });
   };
 
   getCommits = async ({
@@ -121,17 +122,13 @@ export class Github {
     branch: string;
     repo: string;
   }) => {
-    return fetch(
-      `${this.apiUrl}/repos/${owner}/${repo}/commits?sha=${branch}`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${this.token}`,
-          Accept: "application/vnd.github.v3+json",
-          "Content-Type": "application/json",
-        },
-      }
-    ).then((response) => response.json());
+    return this.octokit
+      .request("GET /repos/{owner}/{repo}/commits", {
+        owner,
+        repo,
+        sha: branch,
+      })
+      .then((response) => response.data);
   };
 
   listUnmergedCommits = async ({
@@ -192,25 +189,31 @@ export class Github {
     title: string;
     body: string;
   }) => {
-    return fetch(`${this.apiUrl}/repos/${owner}/${repo}/pulls`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-        Accept: "application/vnd.github.v3+json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        title,
-        head: sourceBranch,
-        base: targetBranch,
-        body,
-      }),
+    return this.octokit.request("POST /repos/{owner}/{repo}/pulls", {
+      owner,
+      repo,
+      title,
+      head: sourceBranch,
+      base: targetBranch,
+      body,
     });
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function accountToOwner(data: any, type?: "user" | "organization") {
+function accountToOwner(
+  data: {
+    id: number;
+    login: string;
+    avatar_url: string;
+    events_url: string;
+    node_id: string;
+    repos_url: string;
+    url: string;
+    bio?: string;
+    description?: string;
+  },
+  type?: "user" | "organization"
+) {
   return {
     id: data.id,
     type,
